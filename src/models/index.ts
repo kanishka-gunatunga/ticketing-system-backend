@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize';
+import 'mysql2';
 import dbConfig from '../config/db.config';
 import { UserFactory } from './user.model';
 import { CustomerFactory } from './customer.model';
