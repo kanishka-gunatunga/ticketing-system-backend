@@ -4,6 +4,34 @@ import db from '../models';
 
 const User = db.User as any;
 
+const resolveProductsPayload = (products: any) => {
+    if (!products) return undefined;
+    if (Array.isArray(products)) return products;
+    if (typeof products === 'string') {
+        try {
+            const parsed = JSON.parse(products);
+            return Array.isArray(parsed) ? parsed : [products];
+        } catch {
+            return products.includes(',') ? products.split(',').map((p: any) => p.trim()) : [products];
+        }
+    }
+    return undefined;
+};
+
+const resolveInstantIdsPayload = (instantIds: any) => {
+    if (!instantIds) return undefined;
+    if (typeof instantIds === 'object') return instantIds;
+    if (typeof instantIds === 'string') {
+        try {
+            const parsed = JSON.parse(instantIds);
+            return typeof parsed === 'object' ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+    return undefined;
+};
+
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
@@ -91,8 +119,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             role: role || 'AgentL1',
             password_hash,
             contact_no,
-            products: Array.isArray(products) ? products : undefined,
-            instant_ids: typeof instant_ids === 'object' ? instant_ids : undefined,
+            products: resolveProductsPayload(products),
+            instant_ids: resolveInstantIdsPayload(instant_ids),
             is_online: false
         });
 

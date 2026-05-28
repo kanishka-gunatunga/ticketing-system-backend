@@ -9,6 +9,34 @@ dotenv.config();
 
 const User = db.User as any;
 
+const resolveProductsPayload = (products: any) => {
+    if (!products) return undefined;
+    if (Array.isArray(products)) return products;
+    if (typeof products === 'string') {
+        try {
+            const parsed = JSON.parse(products);
+            return Array.isArray(parsed) ? parsed : [products];
+        } catch {
+            return products.includes(',') ? products.split(',').map((p: any) => p.trim()) : [products];
+        }
+    }
+    return undefined;
+};
+
+const resolveInstantIdsPayload = (instantIds: any) => {
+    if (!instantIds) return undefined;
+    if (typeof instantIds === 'object') return instantIds;
+    if (typeof instantIds === 'string') {
+        try {
+            const parsed = JSON.parse(instantIds);
+            return typeof parsed === 'object' ? parsed : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+    return undefined;
+};
+
 interface JwtUserPayload {
     id: number;
     role: string;
@@ -72,8 +100,8 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
             email,
             role: finalRole as any,
             password_hash: hashedPassword,
-            products: Array.isArray(products) ? products : undefined,
-            instant_ids: typeof instant_ids === 'object' ? instant_ids : undefined,
+            products: resolveProductsPayload(products),
+            instant_ids: resolveInstantIdsPayload(instant_ids),
             is_online: false
         });
 
@@ -174,8 +202,8 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
             role: finalRole,
             contact_no: contact_no !== undefined ? contact_no : user.contact_no,
             email: email || user.email,
-            products: products !== undefined ? products : user.products,
-            instant_ids: instant_ids !== undefined ? instant_ids : user.instant_ids
+            products: products !== undefined ? resolveProductsPayload(products) : user.products,
+            instant_ids: instant_ids !== undefined ? resolveInstantIdsPayload(instant_ids) : user.instant_ids
         };
 
         if (password) {
