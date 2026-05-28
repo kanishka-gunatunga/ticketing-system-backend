@@ -50,23 +50,13 @@ export const listTickets = async (req: Request, res: Response): Promise<void> =>
             // L1 Agents see unassigned new tickets OR tickets assigned to them specifically
             where[Op.or] = [
                 { status: 'New' },
-                {
-                    [Op.and]: [
-                        { assigned_to: currentUserId },
-                        { status: 'Assigned L1' }
-                    ]
-                }
+                { assigned_to: currentUserId }
             ];
         } else if (userRole === 'AgentL2') {
             // L2 Agents see escalated unassigned tickets OR tickets assigned to them specifically
             where[Op.or] = [
                 { status: 'Escalated' },
-                {
-                    [Op.and]: [
-                        { assigned_to: currentUserId },
-                        { status: 'Assigned L2' }
-                    ]
-                }
+                { assigned_to: currentUserId }
             ];
         }
 
