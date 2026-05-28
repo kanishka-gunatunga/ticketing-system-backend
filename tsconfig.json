@@ -28,7 +28,9 @@
         "baseUrl": "."
     },
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "src/routes/chat.routes.ts",
+        "src/controllers/chat.controller.ts"
     ],
     "include": [
         "src/**/*.ts"

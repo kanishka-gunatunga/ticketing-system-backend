@@ -7,12 +7,12 @@ const dbConfig = {
     PASSWORD: process.env.DB_PASSWORD || "Kaveesha@123",
     HOST: process.env.HOST || "localhost",
     dialect: "mysql",
-    // dialectOptions: {
-    //     ssl: {
-    //         require: true,
-    //         rejectUnauthorized: false
-    //     }
-    // },
+    dialectOptions: process.env.DB_SSL === 'true' ? {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    } : undefined,
     pool: {
         max: 5,
         min: 0,

@@ -11,11 +11,37 @@ import userRoutes from './routes/user.routes';
 
 dotenv.config();
 
-const app = express();
+const app = BirdInit();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+function BirdInit() {
+    const app = express();
+    // Middleware
+    app.use(cors());
+    app.use(express.json());
+    return app;
+}
+
+// Vercel Serverless On-Demand DB Sync
+// On actual Vercel deployments, process.env.VERCEL is '1' and process.env.NOW_REGION is set.
+// Checking process.env.NOW_REGION ensures that we do not mistakenly trigger Vercel serverless mode 
+// during local development if the user's terminal environment has VERCEL=true/1 set.
+const isVercel = (process.env.VERCEL === '1' || process.env.VERCEL === 'true') && !!process.env.NOW_REGION;
+let isDbSynced = false;
+
+if (isVercel) {
+    app.use(async (req, res, next) => {
+        if (!isDbSynced) {
+            try {
+                await db.sequelize.sync({ alter: { drop: false } });
+                isDbSynced = true;
+                console.log("Database synced on-demand in Vercel serverless container.");
+            } catch (error) {
+                console.error("Failed to sync database on-demand:", error);
+            }
+        }
+        next();
+    });
+}
 
 // Routes
 app.use('/api/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -44,11 +70,10 @@ const startServer = async () => {
         });
         await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.DATABASE || 'ticketing-system'}\`;`);
         await connection.end();
-        console.log("Database verified/created.");
 
         // Sync database (safe mode: assumes tables exist or creates them if missing)
         await db.sequelize.sync({ alter: { drop: false } });
-        console.log("Database synced.");
+        console.log("Database verified, synced, and connected.");
 
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
@@ -58,4 +83,8 @@ const startServer = async () => {
     }
 };
 
-startServer();
+if (!isVercel) {
+    startServer();
+}
+
+export default app;
