@@ -68,10 +68,40 @@ export const UserFactory = (sequelize: Sequelize) => {
             products: {
                 type: DataTypes.JSON,
                 allowNull: true,
+                get() {
+                    const rawValue = this.getDataValue('products');
+                    if (!rawValue) return [];
+                    if (typeof rawValue === 'string') {
+                        try {
+                            return JSON.parse(rawValue);
+                        } catch {
+                            return [];
+                        }
+                    }
+                    return rawValue;
+                },
+                set(value) {
+                    this.setDataValue('products', value ? (typeof value === 'string' ? value : JSON.stringify(value)) : null);
+                }
             },
             instant_ids: {
                 type: DataTypes.JSON,
                 allowNull: true,
+                get() {
+                    const rawValue = this.getDataValue('instant_ids');
+                    if (!rawValue) return {};
+                    if (typeof rawValue === 'string') {
+                        try {
+                            return JSON.parse(rawValue);
+                        } catch {
+                            return {};
+                        }
+                    }
+                    return rawValue;
+                },
+                set(value) {
+                    this.setDataValue('instant_ids', value ? (typeof value === 'string' ? value : JSON.stringify(value)) : null);
+                }
             },
             is_online: {
                 type: DataTypes.BOOLEAN,
