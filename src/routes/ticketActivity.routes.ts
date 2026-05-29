@@ -1,5 +1,13 @@
 import { Router } from 'express';
-import { createFollowUp, getFollowUps, createReminder, getReminders, getAllUpcomingReminders, getRecentFollowUps } from '../controllers/ticketActivity.controller';
+import {
+    createFollowUp,
+    getFollowUps,
+    createReminder,
+    getReminders,
+    getAllUpcomingReminders,
+    getRecentFollowUps,
+    getUserNotifications
+} from '../controllers/ticketActivity.controller';
 
 const router = Router();
 
@@ -12,5 +20,6 @@ router.get('/followups/recent', getRecentFollowUps);
 router.post('/tickets/:ticketId/reminders', createReminder);
 router.get('/tickets/:ticketId/reminders', getReminders);
 router.get('/reminders/upcoming', getAllUpcomingReminders);
+router.get('/reminders/user', getUserNotifications);
 
 export default router;

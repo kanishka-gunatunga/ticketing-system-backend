@@ -320,3 +320,42 @@ export const adminAssignAgent = async (req: Request, res: Response): Promise<voi
         res.status(500).json({ message: "Error in Admin assignment", error: error.message });
     }
 };
+
+// Client Update Nudge Reminder
+export const remindTicket = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { userId } = req.body;
+
+        const ticket = await Ticket.findByPk(Number(id));
+        if (!ticket) {
+            res.status(404).json({ message: "Ticket not found" });
+            return;
+        }
+
+        // Record a new activity nudging the agent
+        await TicketActivity.create({
+            ticket_id: ticket.id,
+            user_id: userId ? Number(userId) : undefined,
+            activity_type: 'Log',
+            details: `Nudge: Requester sent a reminder alert due to delayed agent response.`
+        });
+
+        // Automatically create a standard TicketReminder entry for the agent
+        await TicketReminder.create({
+            ticket_id: ticket.id,
+            task_title: `URGENT Update Request (Ticket ${ticket.ticket_number})`,
+            task_date: new Date(),
+            note: `Customer sent an update reminder. Please review and respond as soon as possible.`,
+            created_by: userId ? Number(userId) : undefined
+        });
+
+        console.log(`[Reminder Service Log] Client user ${userId} nudged Agent/Queue for Ticket ${ticket.ticket_number}`);
+
+        res.json({ message: "Reminder successfully sent to the agent and logged in timeline.", ticket });
+    } catch (error: any) {
+        console.error("Remind Ticket Error:", error);
+        res.status(500).json({ message: "Error sending update reminder", error: error.message });
+    }
+};
+

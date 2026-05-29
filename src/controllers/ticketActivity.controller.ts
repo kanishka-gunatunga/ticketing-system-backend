@@ -150,3 +150,55 @@ export const getRecentFollowUps = async (req: Request, res: Response) => {
         });
     }
 };
+
+// Get User-specific Reminders/Notifications
+export const getUserNotifications = async (req: Request, res: Response) => {
+    try {
+        const { userId, role } = req.query;
+
+        if (!userId || !role) {
+            res.status(400).send({ message: "userId and role are required query parameters." });
+            return;
+        }
+
+        const currentUserId = Number(userId);
+        const userRole = role as string;
+
+        const ticketWhere: any = {};
+
+        // Role-based visibility matching listTickets
+        if (userRole === 'Company') {
+            ticketWhere.company_user_id = currentUserId;
+        } else if (userRole === 'AgentL1') {
+            ticketWhere[Op.or] = [
+                { status: 'New' },
+                { assigned_to: currentUserId }
+            ];
+        } else if (userRole === 'AgentL2') {
+            ticketWhere[Op.or] = [
+                { status: 'Escalated' },
+                { assigned_to: currentUserId }
+            ];
+        }
+
+        const reminders = await TicketReminder.findAll({
+            include: [
+                {
+                    model: db.Ticket,
+                    where: ticketWhere,
+                    attributes: ['id', 'ticket_number', 'title', 'status']
+                }
+            ],
+            order: [['created_at', 'DESC']],
+            limit: 15
+        });
+
+        res.status(200).send(reminders);
+    } catch (err: any) {
+        console.error("Error in getUserNotifications:", err);
+        res.status(500).send({
+            message: err.message || "Some error occurred while retrieving user notifications."
+        });
+    }
+};
+

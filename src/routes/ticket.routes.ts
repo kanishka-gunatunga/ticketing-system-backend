@@ -6,7 +6,8 @@ import {
     getTicketDetails,
     assignTicket,
     escalateTicket,
-    adminAssignAgent
+    adminAssignAgent,
+    remindTicket
 } from '../controllers/ticket.controller';
 import { getTicketMessages, sendTicketMessage } from '../controllers/ticketChat.controller';
 
@@ -19,6 +20,7 @@ router.get('/:id', getTicketDetails);
 router.post('/:id/assign', assignTicket);
 router.post('/:id/escalate', escalateTicket);
 router.post('/:id/admin-assign', adminAssignAgent);
+router.post('/:id/remind', remindTicket);
 router.get('/:id/messages', getTicketMessages);
 router.post('/:id/messages', sendTicketMessage);
 
