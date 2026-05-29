@@ -147,6 +147,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
         }
 
         const users = await User.findAll({
+            where,
             order: [['created_at', 'DESC']]
         });
         res.json(users);

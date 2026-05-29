@@ -31,7 +31,7 @@ const createTicketSchema = z.object({
 // List Tickets filtered by User Role
 export const listTickets = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { role, userId, status, priority, assignee } = req.query;
+        const { role, userId, status, priority, category, assignee } = req.query;
         const where: any = {};
 
         // Parse query params safely
@@ -41,6 +41,7 @@ export const listTickets = async (req: Request, res: Response): Promise<void> =>
         // Apply filters
         if (status) where.status = status;
         if (priority) where.priority = priority;
+        if (category) where.category = category;
         if (assignee) where.assigned_to = assignee;
 
         // Role-based visibility
